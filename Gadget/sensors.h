@@ -16,7 +16,6 @@ int solarCapacity; // between 0-100, from 0 to 5V
 Example Sound Level Sketch for the 
 Adafruit Microphone Amplifier
 ****************************************/
- 
 const int sampleWindow = 50; // Sample window width in mS (50 mS = 20Hz)
 unsigned int sample;
 
@@ -32,17 +31,7 @@ void initSensors()
     if(DEBUG) Serial.println("Sensors set up");
   }
 
-void readSensors()
-{
-  if(SOLAR)
-  {
-    readSolarLevel();
-    }
-    if(NOISE)
-    {
-      readSoundLevel();
-      }
-  }
+
 void readSolarLevel()
 {
       //setup vars for solar sensor readings
@@ -51,9 +40,9 @@ void readSolarLevel()
     // map 1023 input to 3.3V 
     solarVoltage = 2*(float(sensorValue)*3.3/1023.0);
     //solarVoltage = 2*map(float(sensorValue),0,1023,0,3.3);
-    if(DEBUG) Serial.println(solarVoltage);
+    //if(DEBUG) Serial.println(solarVoltage);
     solarCapacity = int(solarVoltage*100/5);
-    if(DEBUG) Serial.println(solarCapacity);
+    //if(DEBUG) Serial.println(solarCapacity);
   }
 void readSoundLevel() 
 {
@@ -85,5 +74,18 @@ void readSoundLevel()
    Serial.println(volts);
 }
 
+
+void readSensors()
+{
+  if(SOLAR)
+  {
+    readSolarLevel();
+    }
+    if(NOISE)
+    {
+      readSoundLevel();
+      }
+  }
+  
 
 #endif

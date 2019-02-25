@@ -2,6 +2,21 @@
 
 #define DEBUG true
 
+// GAMEPLAY
+
+//STACK: player has limited amount of data saving storage, 
+// when all storage is filled with sensor reading (eg one button interface) 
+// the player must return to wifi hotspot 
+//#define STACK true
+//#define STACK_SIZE 20
+
+//TIMER: player has predefined rest time after taking a sensor reading:
+// eg: after the palyer takes a reading, he needs to wait 5 mins to be able to take another one. 
+#define UPLOAD_TIMER true
+#define UPLOAD_TIMER_SECONDS 3
+
+#define TEAM_NAME "redRabbit"
+#define TAG_NAME "Solar"
 
 // depending on hardware connections, define the following 
 // precompiler directives as true or false
@@ -30,18 +45,6 @@
 
 
 
-// GAMEPLAY
-
-//STACK: player has limited amount of data saving storage, 
-// when all storage is filled with sensor reading (eg one button interface) 
-// the player must return to wifi hotspot 
-//#define STACK true
-//#define STACK_SIZE 20
-
-//TIMER: player has predefined rest time after taking a sensor reading:
-// eg: after the palyer takes a reading, he needs to wait 5 mins to be able to take another one. 
-//#define TIMER true
-
 
 
 
@@ -58,5 +61,6 @@ void loop() {
   // put your main code here, to run repeatedly:
   readSensors();
   processInteractions();
-  //communicate();
+  communicate();
+  //geolocate();
 }
