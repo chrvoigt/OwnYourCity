@@ -84,17 +84,29 @@ void initComm()
 
   WiFi.mode(WIFI_STA);
   WiFiMulti.addAP(ssid, password);
-
-  while ((WiFiMulti.run() != WL_CONNECTED))
+  int counter = 0;
+  bool timeOut = false;
+  while ((WiFiMulti.run() != WL_CONNECTED) && !timeOut)
   {
     delay(1000);
+    counter++;
     if (DEBUG) Serial.print(".");
     if (OLED)
     {
       display.print(".");
       display.display();
     }
-
+  if(counter>7)
+  {
+    if (DEBUG) Serial.print("Time Out");
+    if (OLED)
+    {
+      display.print("Time Out");
+      display.display();
+    }
+    timeOut = true;//break;
+    offline = true;
+    }
   }
   //Serial.println(WiFi.localIP());
   //delay(3000);
@@ -113,7 +125,7 @@ void initComm()
 
     }
     bool flag = false;
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 1; i++) {
       int retval = client.connect(host, httpsPort);
       if (retval == 1) {
         flag = true;
@@ -201,8 +213,8 @@ void communicate()
 //    offline = !success; 
 //  }
   
-  if(DEBUG) Serial.print("Offline: ");
-  if(DEBUG) Serial.println(offline);
+//  if(DEBUG) Serial.print("Offline: ");
+//  if(DEBUG) Serial.println(offline);
   if (uploadRequest == true)
   {
     //if (SPREADSHEET) sendSheetData();

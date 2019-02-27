@@ -15,8 +15,8 @@
 
 
 // SENSORS:
-#define SOLAR true
-#define AIR false
+#define SOLAR false
+#define AIR true
 #define NOISE false
 
 

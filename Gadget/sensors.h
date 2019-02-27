@@ -32,23 +32,14 @@ double noise; // ideally in dB
 /////////////////////////////////////////////////////////////////
 // AIR (CO2 levels)
 /////////////////////////////////////////////////////////////////
-#define MQ135_DEFAULTPPM 399 //default ppm of CO2 for calibration
-#define MQ135_DEFAULTRO 68550 //default Ro for MQ135_DEFAULTPPM ppm of CO2
-#define MQ135_SCALINGFACTOR 116.6020682 //CO2 gas value
-#define MQ135_EXPONENT -2.769034857 //CO2 gas value
-#define MQ135_MAXRSRO 2.428 //for CO2
-#define MQ135_MINRSRO 0.358 //for CO2
+
 #define AIRPIN A0
 //VARIABLES
 int airSensorValue;
 float airVoltage;
 
 float ppm; //particle per million
-double mq135_ro = 10000;    // this has to be tuned 10K Ohm
-double val = 0;                 // variable to store the value coming from the sensor
-double valAIQ =0;
-double lastAIQ =0;
-
+float ppm_m1; //particle per million
 
 
 
@@ -74,6 +65,13 @@ void initSensors()
   if (DEBUG) Serial.println("Sensors set up");
 }
 
+
+
+
+
+
+
+
 /////////////////////////////////////////////////////////////////
 void readSolarLevels()
 {
@@ -94,6 +92,13 @@ void readSolarLevels()
    solarPower = solarVoltage * 0.081; // in WAtts
    
 }
+
+
+
+
+
+
+
 
 /////////////////////////////////////////////////////////////////
 void readMicLevel()
@@ -131,14 +136,51 @@ void readMicLevel()
   noise = dB;
 }
 
+
+
+
+
+
+
+
+
+
 /////////////////////////////////////////////////////////////////
+
+
+
+
+// METHOD 1
+// https://github.com/GeorgK/MQ135
+///// The load resistance on the board
+//#define RLOAD 10.0
+///// Calibration resistance at atmospheric CO2 level
+//#define RZERO 76.63
+///// Parameters for calculating ppm of CO2 from sensor resistance
+//#define PARA 116.6020682
+//#define PARB 2.769034857
+///// Atmospheric CO2 level for calibration purposes
+////#define ATMOCO2 397.13
+
+
+// METHOD 2
+// https://github.com/empierre/arduino/blob/master/AirQuality-MQ135.ino
+//  co2 levels: https://www.kane.co.uk/knowledge-centre/what-are-safe-levels-of-co-and-co2-in-rooms
+#define MQ135_DEFAULTPPM 399 //default ppm of CO2 for calibration
+#define MQ135_DEFAULTRO 497432 // 68550  //467046.0 //default Ro for MQ135_DEFAULTPPM ppm of CO2
+#define MQ135_SCALINGFACTOR 116.6020682 //CO2 gas value
+#define MQ135_EXPONENT -2.769034857 //CO2 gas value
+#define MQ135_MAXRSRO 2.428 //for CO2
+#define MQ135_MINRSRO 0.358 //for CO2
+double mq135_ro = 10000;    // this has to be tuned 10K Ohm
+double val = 0;                 // variable to store the value coming from the sensor
 
 /*
  * get the calibrated ro based upon read resistance, and a know ppm
  */
-long mq135_getro(long resvalue, double ppm) {
-return (long)(resvalue * exp( log(MQ135_SCALINGFACTOR/ppm) / MQ135_EXPONENT ));
-}
+//long mq135_getro(long resvalue, double ppm) {
+//return (long)(resvalue * exp( log(MQ135_SCALINGFACTOR/ppm) / MQ135_EXPONENT ));
+//}
 
 /*
  * get the ppm concentration
@@ -152,50 +194,39 @@ ret = (double)((double)MQ135_SCALINGFACTOR * pow( ((double)resvalue/ro), MQ135_E
 }
 return ret;
 }
-/*****************************  MQGetPercentage **********************************
-Input:   rs_ro_ratio - Rs divided by Ro
-         pcurve      - pointer to the curve of the target gas
-Output:  ppm of the target gas
-Remarks: By using the slope and a point of the line. The x(logarithmic value of ppm) 
-         of the line could be derived if y(rs_ro_ratio) is provided. As it is a 
-         logarithmic coordinate, power of 10 is used to convert the result to non-logarithmic 
-         value.
-************************************************************************************/ 
-int  MQGetPercentage(float rs_ro_ratio, float ro, float *pcurve)
-{
-  return (double)(pcurve[0] * pow(((double)rs_ro_ratio/ro), pcurve[1]));
-}
-
 
 void readAirQuality()
 {
-  //ppm = gasSensor.getPPM();
+  // adjusted to hw voltage division 
+  int rawSensorValue = analogRead(A0);
+  int adjustedSensorValue = 2*map(rawSensorValue,0,775,0,511);
+  float rawVoltage = (float(rawSensorValue)*3.3/1023.);
+  float adjustedVoltage = 2*rawVoltage;
+  airSensorValue = adjustedSensorValue;//2*;// Get AIQ value, multiplied 2 due to hw voltage division in half
+  airVoltage = adjustedVoltage;//2*(airSensorValue*3.3/1023.);
   
-//  int val = 2*analogRead(A0);
-//  if(DEBUG) Serial.print(val);
-//  if(DEBUG) Serial.print("  ");
-//  float V = ((1023./(float)val) * 5. - 1.)*RLOAD;
-//  ppm =  PARA * pow((V/RZERO), -PARB);
-//  if(DEBUG) Serial.println(ppm);
+  // method 1
+//  float resistance = ((1023./(float)airSensorValue) - 1.)*RLOAD;
+//  ppm_m1 =  PARA * pow((resistance/RZERO), -PARB);
+//  if(DEBUG) Serial.println(ppm_m1);
 
   // method 2:
-
-  airSensorValue = analogRead(A0);// Get AIQ value
-  double valr = (double)airSensorValue;
+double valr = (double)airSensorValue;
   //Serial.println(val);
   double val =  ((float)22000*(1023-valr)/valr); 
-  airVoltage = 2*(airSensorValue*3.3/1023.); 
   //during clean air calibration, read the Ro value and replace MQ135_DEFAULTRO value with it, you can even deactivate following function call.
   //mq135_ro = mq135_getro(val, MQ135_DEFAULTPPM);
   //convert to ppm (using default ro)
   ppm = mq135_getppm(val, MQ135_DEFAULTRO);
-
-  Serial.print ( "Val / Ro / value:");
+Serial.print ( "airSensorValue:");
+  Serial.print ( airSensorValue);
+  Serial.print ( "  ");
+  Serial.print ( "Val / Ro / ppm:");
   Serial.print ( val);
-//  Serial.print ( " / ");
-//  Serial.print ( mq135_ro);
   Serial.print ( " / ");
-  Serial.print ( ppm);
+  //Serial.print ( mq135_ro);
+  Serial.print ( " / ");
+  Serial.println ( ppm);
 
   
 }
