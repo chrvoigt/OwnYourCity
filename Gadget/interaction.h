@@ -14,11 +14,13 @@ I2C_BUTTON button(DEFAULT_I2C_BUTTON_ADDRESS); //I2C Address 0x31
 bool ButtonClickedB = false;
 #endif
 
+bool uploadRequest;
 
 
 
 void initInteractions()
 {
+  uploadRequest = false;
   if (OLED)
   {
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 64x48)
@@ -37,61 +39,110 @@ void processInteractions()
 {
   if (OLED)
   {
+    
     // handle buttons
     if (digitalRead(D3) == LOW) //A
     {
-  
+
     }
     if (digitalRead(D4) == LOW) //B
     {
-        ButtonClickedB = true;
-        display.clearDisplay();
-        display.setCursor(0, 0);
-      //display.setTextSize(1);
-        display.println("Uploading");
-        
-        display.display();
+
+      uploadRequest = true;
+      ButtonClickedB = true;
+
     }
-    //display sth
-    if (SOLAR)
+    //display values
+    display.clearDisplay();
+    display.setCursor(0, 0);
+      display.setTextSize(1);
+    if(offline) display.println("OFFLINE");
+    
+    // DISPLAY
+    if (uploadRequest)
     {
+      // show upload screen
       
-      if(ButtonClickedB)
+      display.setTextSize(1);
+      display.println("Uploading");
+      if (SOLAR)
       {
-        
-        
-        display.println("SolarCap:");
-        display.print(solarCapacity);
-        display.display();
-        }
-        else
-        {
-          //        #define BLACK    0x0000
-      //#define BLUE     0x001F
-      //#define RED      0xF800
-      //#define GREEN    0x07E0
-      //#define CYAN     0x07FF
-      //#define MAGENTA  0xF81F
-      //#define YELLOW   0xFFE0
-      //#define WHITE    0xFFFF
-      // display solar var
-      display.clearDisplay();
-      display.setCursor(0, 0);
+        display.println("Charge:");
+        display.setTextSize(2);
+        display.println(chargedWattSec);
+        display.setTextSize(1);
+        display.println("Ws");
+      }
+      if (NOISE)
+      {
+        display.println("NoiseLevel");
+        display.setTextSize(2);
+        display.print((int)noise);
+        display.println("dB");
+      }
+      if (AIR)
+      {
+        //display.println("AirQuality");
+        //display.setTextSize(2);
+
+        display.print(ppm);
+        display.println("ppm");
+      }
+      display.display();
+      ButtonClickedB = false;
+    }
+    else
+    {
+      // display sensor values, etc.
+      
+      //display.setCursor(0, 0);
       display.setTextSize(1);
       display.setTextColor(WHITE);
 
-      display.println("SolarVolt:");
-      display.println(solarVoltage);
-      display.println();
-      //display.setTextColor(WHITE);
-      display.println("SolarCap:");
-      display.print(solarCapacity);
-      display.display();
-          }
+      if (SOLAR)
+      {
+        
+        display.setTextSize(1);
+//        display.println("SolarVolt:");
+//        display.print(solarVoltage);
+//        display.println("V");
+//        display.println();
+        //display.setTextColor(WHITE);
+        display.println("Solar");
+        display.println("Potential:");
+        display.print(solarPower);
+        display.println("W");
+        display.println("Charged:");
+        display.print(chargedWattSec);
+        display.println(" Ws");
+        
+        
+      }
+      if (NOISE)
+      {
+        display.setTextSize(1);
+        display.println("NoiseLevel");
+        display.setTextSize(2);
+        display.print((int)noise);
+        display.println("dB");
+        
+      }
+      if (AIR)
+      {
+        
+        display.print(airSensorValue);
+        display.println("");
+        display.print(airVoltage);
+        display.println("V");
+        
+        //display.println("AirQuality");
+        display.setTextSize(1);
+        display.print(ppm);
+        display.println("ppm");
+      }
+      
     }
-    
-
-
+    display.display();
   }
 
   //  if (BUTTON)
