@@ -16,6 +16,9 @@ int solarCapacity; // between 0-100, from 0 to 5V
 // power -> 5*0.081 = 0.405W energy producer at max potential: 100%
 // collecting Wattsecs
 
+
+
+
 /////////////////////////////////////////////////////////////////
 // NOISE (Sound levels)
 /////////////////////////////////////////////////////////////////
@@ -24,14 +27,23 @@ int solarCapacity; // between 0-100, from 0 to 5V
 // https://circuitdigest.com/microcontroller-projects/arduino-sound-level-measurement
 // https://learn.adafruit.com/adafruit-microphone-amplifier-breakout/measuring-sound-levels
 // variables
-const int sampleWindow = 50; // Sample window width in mS (50 mS = 20Hz)
+const int sampleWindow = 100; // Sample window width in mS (50 mS = 20Hz)
 unsigned int sample;
 double noise; // ideally in dB
 #define NOISEPIN A0
 
+
+
 /////////////////////////////////////////////////////////////////
 // AIR (CO2 levels)
 /////////////////////////////////////////////////////////////////
+// The sensor needs a load-resistor at the output to ground. Its value could be from 
+// 2kOhm to 47kOhm. The lower the value, the less sensitive is the sensor. The higher 
+// the value, the less accurate is sensor for higher concentrations of gas. If only one 
+// specific gas is measured, the load-resistor can be calibrated by applying a known 
+// concentration of that gas. If the sensor is used to measure any gas (like in a air 
+// quality detector) the load-resistor could be set for a value of about 1V output with 
+// clean air. Choosing a good value for the load-resistor is only valid after the burn-in time
 
 #define AIRPIN A0
 //VARIABLES
@@ -100,6 +112,12 @@ void readSolarLevels()
 
 
 
+
+double mapE(double x, double in_min, double in_max, double out_min, double out_max)
+{
+return (x - in_min) * (out_max - out_min + 1) / (in_max - in_min + 1) + out_min;
+}
+
 /////////////////////////////////////////////////////////////////
 void readMicLevel()
 {
@@ -127,17 +145,24 @@ void readMicLevel()
   }
   peakToPeak = signalMax - signalMin;  // max - min = peak-peak amplitude
   //double volts = (peakToPeak * 3.3) / 1024;  // convert to volts
-  double volts = ((peakToPeak * 3.3) / 1024) * 0.707;  // convert to RMS voltage
-  double first = log10(volts / 0.00631) * 20;
-  double dB = first + 94 - 44 - 25;
-  if (DEBUG) Serial.println(dB);
+  double volts = ((float(peakToPeak) * 3.3) / 1024.) * 0.707;  // convert to RMS voltage
+  if (DEBUG) Serial.print(peakToPeak);
+  if (DEBUG) Serial.print(" ");
+  if (DEBUG) Serial.print(volts);
+  if (DEBUG) Serial.print(" ");
+  //double first = log10(volts / 0.00631) * 20;
+  //double dB = //first + 94 - 44 - 25;
+  double dB = 20*log10(volts)+60; 
+  
   //delay(500);
   //return (dB);
-  noise = dB;
+  // worst case:
+  dB= 120.*volts/3.3;//map(volts,0.0,3.3,30.0,120.0);
+  dB = mapE(volts,0.0,2.29,30,120);
+  if (DEBUG) Serial.println(dB);
+  //noise = dB;
+  noise = volts;
 }
-
-
-
 
 
 
@@ -197,13 +222,22 @@ return ret;
 
 void readAirQuality()
 {
-  // adjusted to hw voltage division 
+  
+  
+  // 5V stepped up to senser, output divided in half, 
+  // output adjusted to hw voltage division and 3.3V logic. 
+  // wemos: values are 0-3.3V corresponding to 0-1023 
   int rawSensorValue = analogRead(A0);
   int adjustedSensorValue = 2*map(rawSensorValue,0,775,0,511);
   float rawVoltage = (float(rawSensorValue)*3.3/1023.);
   float adjustedVoltage = 2*rawVoltage;
-  airSensorValue = adjustedSensorValue;//2*;// Get AIQ value, multiplied 2 due to hw voltage division in half
-  airVoltage = adjustedVoltage;//2*(airSensorValue*3.3/1023.);
+
+  // sensor fed directly from 3.3V power and read resutls
+//   int rawSensorValue = analogRead(A0);
+//   float rawVoltage = (float(rawSensorValue)*3.3/1023.);
+   
+   airSensorValue = adjustedSensorValue;//2*;// Get AIQ value, multiplied 2 due to hw voltage division in half
+   airVoltage = adjustedVoltage;//2*(airSensorValue*3.3/1023.);
   
   // method 1
 //  float resistance = ((1023./(float)airSensorValue) - 1.)*RLOAD;
@@ -217,7 +251,9 @@ double valr = (double)airSensorValue;
   //during clean air calibration, read the Ro value and replace MQ135_DEFAULTRO value with it, you can even deactivate following function call.
   //mq135_ro = mq135_getro(val, MQ135_DEFAULTPPM);
   //convert to ppm (using default ro)
-  ppm = mq135_getppm(val, MQ135_DEFAULTRO);
+  //ppm = mq135_getppm(val, MQ135_DEFAULTRO);
+
+ppm = airSensorValue;
 Serial.print ( "airSensorValue:");
   Serial.print ( airSensorValue);
   Serial.print ( "  ");
@@ -230,7 +266,7 @@ Serial.print ( "airSensorValue:");
 
   
 }
-unsigned long readingInterval = 250;
+unsigned long readingInterval = 100;
 unsigned long lastReadingTime = 0;
 void readSensors()
 {

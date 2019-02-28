@@ -7,22 +7,17 @@
 #include <ESP8266HTTPClient.h>
 ESP8266WiFiMulti WiFiMulti;
 
-  const char* ssid     = "whiterabbit";
-  const char* password = "salvador";
-//const char* ssid     = "whs174";
-//const char* password = "11600174";
-//const char* ssid     = "OpenZNET";
-//const char* password = "mw2ZDhfK";
+//const char* ssid     = "whiterabbit";
+//const char* password = "salvador";
+const char* ssid     = "whs174";
+const char* password = "11600174";
+
 
 //UPLOAD TIMER: player has predefined rest time after taking a sensor reading:
-// eg: after the palyer takes a reading, he needs to wait 5 mins to be able to take another one. 
+// eg: after the palyer takes a reading, he needs to wait 5 mins to be able to take another one.
 #define UPLOAD_TIMER true
 #define UPLOAD_TIMER_SECONDS 3
 
-
-//VIA
-// get this from the wia dashboard. it should start with `d_sk`
-const char* device_secret_key = "d_sk_TSgqDz6aLeUbEELyK4oi0tUI";
 
 
 // GOOGLE SPREADSHEETS
@@ -96,33 +91,34 @@ void initComm()
       display.print(".");
       display.display();
     }
-  if(counter>7)
-  {
-    if (DEBUG) Serial.print("Time Out");
-    if (OLED)
+    if (counter > 7)
     {
-      display.print("Time Out");
-      display.display();
-    }
-    timeOut = true;//break;
-    offline = true;
+      if (DEBUG) Serial.print("Time Out");
+      if (OLED)
+      {
+        display.print("Time Out");
+        display.display();
+      }
+      timeOut = true;//break;
+      offline = true;
+      delay(1000);
     }
   }
   //Serial.println(WiFi.localIP());
   //delay(3000);
-
-  if (DEBUG) Serial.println("connected!");
-  if (OLED) display.println("connected!");
-  if (DEBUG) Serial.println(" IP address: ");
-  if (DEBUG) Serial.println(WiFi.localIP());
-
-  if (SPREADSHEET)
+  if (!offline)
+  {
+    if (DEBUG) Serial.println("connected!");
+    if (OLED) display.println("connected!");
+    if (DEBUG) Serial.println(" IP address: ");
+    if (DEBUG) Serial.println(WiFi.localIP());
+  }
+  if (SPREADSHEET && !offline)
   {
     if (DEBUG)
     {
       Serial.print(String("Connecting to "));
       Serial.println(host);
-
     }
     bool flag = false;
     for (int i = 0; i < 1; i++) {
@@ -147,11 +143,13 @@ void initComm()
         return;
       }
       // Data will still be pushed even certification don't match.
-      if (client.verify(fingerprint, host)) {
-        Serial.println("Certificate match.");
-      } else {
-        Serial.println("Certificate mis-match");
-      }
+      //      if (client.verify(fingerprint, host))
+      //      {
+      //        Serial.println("Certificate match.");
+      //      } else
+      //      {
+      //        Serial.println("Certificate mis-match");
+      //      }
 
     }
 
@@ -163,17 +161,19 @@ void initComm()
   if (DEBUG) Serial.println("Communications set up");
 }
 
+
+
 // This is the main method where data gets pushed to the Google sheet
 bool postSheetData(String team, String tag, float value) {
-  if (!client.connected()) 
+  if (!client.connected())
   {
     Serial.println("Connecting to client again...");
     bool success = client.connect(host, httpsPort);
-    if(!success) 
+    if (!success)
     {
-      if(DEBUG) Serial.println("Upload Failed");
-      
-      if(OLED) 
+      if (DEBUG) Serial.println("Upload Failed");
+
+      if (OLED)
       {
         display.clearDisplay();
         display.setCursor(0, 0);
@@ -182,9 +182,9 @@ bool postSheetData(String team, String tag, float value) {
         display.display();
         delay(1500);
       }
-      
-    }
     return false;
+    }
+    
   }
   String urlFinal = url + "team=" + team + "&tag=" + tag + "&value=" + String(value);
   bool postSuccess = client.printRedir(urlFinal, host, googleRedirHost);
@@ -196,25 +196,16 @@ void communicate()
 {
   // check if connected
   //bool checkConnection;
-  if( WiFiMulti.run() != WL_CONNECTED)
+  if ( WiFiMulti.run() != WL_CONNECTED)
   {
-      // wifi is not connected
-       offline = true;
-    }
-    else
-    {
-      offline = false;
-      }
-   //offline= //client.connected();
-  //offline = !checkConnection;
-//  if(offline) 
-//  {
-//    bool success = client.connect(host, httpsPort); 
-//    offline = !success; 
-//  }
-  
-//  if(DEBUG) Serial.print("Offline: ");
-//  if(DEBUG) Serial.println(offline);
+    // wifi is not connected
+    offline = true;
+  }
+  else
+  {
+    offline = false;
+  }
+
   if (uploadRequest == true)
   {
     //if (SPREADSHEET) sendSheetData();
@@ -228,30 +219,38 @@ void communicate()
           if (SOLAR)
           {
             bool postSuccess = postSheetData(TEAM_NAME, "Solar", chargedWattSec);
-            if(postSuccess) 
+            if (postSuccess)
             {
               chargedWattSec = 0.0;
               if (DEBUG) Serial.print("SOLAR uploaded to SHEET: ");
               if (DEBUG) Serial.println(chargedWattSec);
             }
-            lastUploadTime = millis();
           }
           if (NOISE)
           {
-            postSheetData(TEAM_NAME, "Noise", noise);
-            if (DEBUG) Serial.print("NOISE uploaded to SHEET: ");
-            if (DEBUG) Serial.println(noise);
-            lastUploadTime = millis();
+            bool postSuccess = postSheetData(TEAM_NAME, "Noise", noise);
+            if (postSuccess)
+            {
+              if (DEBUG) Serial.print("NOISE uploaded to SHEET: ");
+              if (DEBUG) Serial.println(noise);
+              //            uploadRequest = false;
+              //            lastUploadTime = millis();
+            }
           }
           if (AIR)
           {
-            postSheetData(TEAM_NAME, "Air", ppm);
-            if (DEBUG) Serial.print("AIR uploaded to SHEET: ");
-            if (DEBUG) Serial.println(ppm);
-            lastUploadTime = millis();
+            bool postSuccess = postSheetData(TEAM_NAME, "Air", ppm);
+            if (postSuccess)
+            {
+              if (DEBUG) Serial.print("AIR uploaded to SHEET: ");
+              if (DEBUG) Serial.println(ppm);
+              //            uploadRequest = false;
+              //            lastUploadTime = millis();
+            }
           }
         }
         uploadRequest = false;
+        lastUploadTime = millis();
       }
     }
   }

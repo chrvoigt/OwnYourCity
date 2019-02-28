@@ -35,6 +35,8 @@ void initInteractions()
 
   if (DEBUG) Serial.println("Interaction methods set up");
 }
+
+
 void processInteractions()
 {
   if (OLED)
@@ -77,8 +79,8 @@ void processInteractions()
       {
         display.println("NoiseLevel");
         display.setTextSize(2);
-        display.print((int)noise);
-        display.println("dB");
+        display.print(noise);
+        //display.println("dB");
       }
       if (AIR)
       {
@@ -121,10 +123,10 @@ void processInteractions()
       if (NOISE)
       {
         display.setTextSize(1);
-        display.println("NoiseLevel");
+        display.println("Noise");
         display.setTextSize(2);
-        display.print((int)noise);
-        display.println("dB");
+        display.println(noise);
+        display.println("Volts");
         
       }
       if (AIR)
