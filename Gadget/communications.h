@@ -7,10 +7,12 @@
 #include <ESP8266HTTPClient.h>
 ESP8266WiFiMulti WiFiMulti;
 
-//const char* ssid     = "whiterabbit";
-//const char* password = "salvador";
-const char* ssid     = "whs174";
-const char* password = "11600174";
+const char* ssid     = "whiterabbit";
+const char* password = "salvador";
+//const char* ssid     = "whs174";
+//const char* password = "11600174";
+//const char* ssid     = "pix";
+//const char* password = "zsi-2018";
 
 
 //UPLOAD TIMER: player has predefined rest time after taking a sensor reading:
@@ -244,6 +246,17 @@ void communicate()
             {
               if (DEBUG) Serial.print("AIR uploaded to SHEET: ");
               if (DEBUG) Serial.println(ppm);
+              //            uploadRequest = false;
+              //            lastUploadTime = millis();
+            }
+          }
+          if (WIND)
+          {
+            bool postSuccess = postSheetData(TEAM_NAME, "Wind", windVoltage);
+            if (postSuccess)
+            {
+              if (DEBUG) Serial.print("WIND uploaded to SHEET: ");
+              if (DEBUG) Serial.println(windVoltage);
               //            uploadRequest = false;
               //            lastUploadTime = millis();
             }

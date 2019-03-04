@@ -90,6 +90,14 @@ void processInteractions()
         display.print(ppm);
         display.println("ppm");
       }
+      if (WIND)
+      {
+        //display.println("AirQuality");
+        //display.setTextSize(2);
+
+        display.print(sensorValue);
+        //display.println("ppm");
+      }
       display.display();
       ButtonClickedB = false;
     }
@@ -139,10 +147,19 @@ void processInteractions()
         
         //display.println("AirQuality");
         display.setTextSize(1);
-        display.print(ppm);
+        display.println((int)ppm);
         display.println("ppm");
 //        display.print(ppm_m1);
 //        display.println("ppm_m1");
+      }
+      if (WIND)
+      {
+        
+        display.print(windSensorValue);
+        display.println("");
+        display.print(windVoltage);
+        display.println("V");
+
       }
       
     }

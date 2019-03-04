@@ -1,15 +1,6 @@
-//TODO:
-
-// noise: - check new sensor input,  
-  //      - find a meaningful mapping, 
-
-//air: check 3.3V logic
-  // - check mapping.  
-
-
 // gadget code with sensor and interaction
 
-#define DEBUG true
+
 
 // GAMEPLAY
 #define TEAM_NAME "groupName" 
@@ -17,13 +8,16 @@
 // SENSORS:
 #define SOLAR false
 #define AIR false
-#define NOISE true
+#define WIND true
+#define NOISE false
 
 
 
 
 
 
+
+#define DEBUG true
 
 
 
