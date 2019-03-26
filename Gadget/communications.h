@@ -1,14 +1,18 @@
 #ifndef COMMUNICATIONS_H
 #define COMMUNICATIONS
 
+// Loaded from ESP libraries that are installeD over Board Manager
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 ESP8266WiFiMulti WiFiMulti;
 
-const char* ssid     = "whiterabbit";
-const char* password = "salvador";
+//const char* ssid     = "whiterabbit";
+//const char* password = "salvador";
+const char* ssid     = "MW40V_3529";
+const char* password = "79730367";
+
 //const char* ssid     = "whs174";
 //const char* password = "11600174";
 //const char* ssid     = "pix";
@@ -34,7 +38,7 @@ const char* password = "salvador";
 ////int it;
 ////int ih;
 
-#include "HTTPSRedirect.h"
+#include "src/HTTPSRedirect/HTTPSRedirect.h"
 
 
 // The ID below comes from Google Sheets.
