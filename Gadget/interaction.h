@@ -5,13 +5,16 @@
 // OLED
 #if OLED
 #include <Wire.h> // SCL: D1 (GPIO5); SDA: D2 (GPIO4)
+
+
 #include "src/Adafruit_SSD1306-esp8266-64x48/Adafruit_SSD1306.h"
+#include "src/OLED_BUTTON/src/LOLIN_I2C_BUTTON.h" // Buttons: A: D3 (GPIO0); B: D4 (GPIO2)
+#include <Adafruit_GFX.h>
+
 #define OLED_RESET 0  // GPIO0
 Adafruit_SSD1306 display(OLED_RESET);
-#include "src/OLED_BUTTON/src/LOLIN_I2C_BUTTON.h" // Buttons: A: D3 (GPIO0); B: D4 (GPIO2)
-
 I2C_BUTTON button(DEFAULT_I2C_BUTTON_ADDRESS); //I2C Address 0x31
-#include "src/Adafruit-GFX-Library/Adafruit_GFX.h"
+
 bool ButtonClickedB = false;
 #endif
 
