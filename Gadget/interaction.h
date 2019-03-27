@@ -20,8 +20,14 @@ bool ButtonClickedB = false;
 
 bool uploadRequest;
 
+#include "FastLED.h"
+#define NUM_LEDS 1
+
+#define DATA_PIN 14
 
 
+// Define the array of leds
+CRGB leds[NUM_LEDS];
 void initInteractions()
 {
   uploadRequest = false;
@@ -37,6 +43,11 @@ void initInteractions()
   }
   //if(BUTTON)
 
+  if (LED)
+  {
+    FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  }
+
   if (DEBUG) Serial.println("Interaction methods set up");
 }
 
@@ -45,7 +56,7 @@ void processInteractions()
 {
   if (OLED)
   {
-    
+
     // handle buttons
     if (digitalRead(D3) == LOW) //A
     {
@@ -61,14 +72,14 @@ void processInteractions()
     //display values
     display.clearDisplay();
     display.setCursor(0, 0);
-      display.setTextSize(1);
-    if(offline) display.println("OFFLINE");
-    
+    display.setTextSize(1);
+    if (offline) display.println("OFFLINE");
+
     // DISPLAY
     if (uploadRequest)
     {
       // show upload screen
-      
+
       display.setTextSize(1);
       display.println("Uploading");
       if (SOLAR)
@@ -108,19 +119,19 @@ void processInteractions()
     else
     {
       // display sensor values, etc.
-      
+
       //display.setCursor(0, 0);
       display.setTextSize(1);
       display.setTextColor(WHITE);
 
       if (SOLAR)
       {
-        
+
         display.setTextSize(1);
-//        display.println("SolarVolt:");
-//        display.print(solarVoltage);
-//        display.println("V");
-//        display.println();
+        //        display.println("SolarVolt:");
+        //        display.print(solarVoltage);
+        //        display.println("V");
+        //        display.println();
         //display.setTextColor(WHITE);
         display.println("Solar");
         display.println("Potential:");
@@ -129,8 +140,8 @@ void processInteractions()
         display.println("Charged:");
         display.print(chargedWattSec);
         display.println(" Ws");
-        
-        
+
+
       }
       if (NOISE)
       {
@@ -139,37 +150,71 @@ void processInteractions()
         display.setTextSize(2);
         display.println(noise);
         display.println("Volts");
-        
+
       }
       if (AIR)
       {
-        
+
         display.print(airSensorValue);
         display.println("");
         display.print(airVoltage);
         display.println("V");
-        
+
         //display.println("AirQuality");
         display.setTextSize(1);
         display.println((int)ppm);
         display.println("ppm");
-//        display.print(ppm_m1);
-//        display.println("ppm_m1");
+        //        display.print(ppm_m1);
+        //        display.println("ppm_m1");
       }
       if (WIND)
       {
-        
+
         display.print(windSensorValue);
         display.println("");
         display.print(windVoltage);
         display.println("V");
 
       }
-      
+
     }
     display.display();
   }
 
+  if (LED)
+  {
+    if (SOLAR)
+    {
+    }
+    if (NOISE)
+    {
+    }
+    if (AIR)
+    {
+    }
+    if (WIND)
+    {
+      if(windSensorValue>0 && windSensorValue<150)
+      {
+        leds[0] = CRGB::Green;
+        }
+      else if (windSensorValue>=150 && windSensorValue<200)
+      {
+        leds[0] = CRGB::Yellow;
+        }
+      else if (windSensorValue>=200 && windSensorValue<250)
+      {
+        leds[0] = CRGB::Red;
+        }
+        
+      FastLED.show();
+    }
+
+    
+
+
+
+  }
   //  if (BUTTON)
   //  {
   //

@@ -25,7 +25,7 @@
 #define OLED true
 // COMMUNICATION
 #define SPREADSHEET true
-
+#define LED true
 bool offline = true;
 
 #include "sensors.h" 
