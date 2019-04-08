@@ -21,7 +21,9 @@ bool ButtonClickedB = false;
 bool uploadRequest;
 
 #include "FastLED.h"
-#define NUM_LEDS 1
+
+#define NUM_LEDS 5
+
 
 #define DATA_PIN 14
 
@@ -60,7 +62,14 @@ void processInteractions()
     // handle buttons
     if (digitalRead(D3) == LOW) //A
     {
+      if(SOLAR)
+      {
+        resetCharge = true;
+        }
+      if(NOISE)
+      gameOver = false;
 
+      
     }
     if (digitalRead(D4) == LOW) //B
     {
@@ -185,32 +194,78 @@ void processInteractions()
   {
     if (SOLAR)
     {
+      if (chargedWattSec > 0.0 && chargedWattSec < 0.5)
+      {
+        leds[0] = CRGB::Black;
+        FastLED.show();
+        delay(250);
+        leds[0] = CRGB::Red;
+      }
+      if (chargedWattSec > 0.5 && chargedWattSec < 1.0)
+      {
+        // blinking red
+        leds[0] = CRGB::Red;
+        
+      }
+      else if (chargedWattSec >= 1.0 && chargedWattSec < 1.5)
+      {
+        leds[0] = CRGB::Yellow;
+      }
+      else if (chargedWattSec >= 1.5)
+      {
+        leds[0] = CRGB::Green;
+      }
     }
     if (NOISE)
     {
+      // 5 pixels, increase in time when its loud.
+
+      if (!gameOver)
+      {
+
+        for (int t = 0; t < 5; t++)
+        {
+
+          if (t < noiseLimit) leds[t] = CRGB::Red;
+          else  leds[t] = CRGB::Green;
+        }
+
+
+      }
+      else
+      {
+        // blink red
+        for (int t = 0; t < 5; t++) leds[t] = CRGB::Black;
+        FastLED.show();
+        delay(500);
+        for (int t = 0; t < 5; t++) leds[t] = CRGB::Red;
+      }
+
     }
     if (AIR)
     {
     }
     if (WIND)
     {
-      if(windSensorValue>0 && windSensorValue<150)
-      {
-        leds[0] = CRGB::Green;
-        }
-      else if (windSensorValue>=150 && windSensorValue<200)
-      {
-        leds[0] = CRGB::Yellow;
-        }
-      else if (windSensorValue>=200 && windSensorValue<250)
+      if (windSensorValue > 0 && windSensorValue < 150)
       {
         leds[0] = CRGB::Red;
-        }
-        
-      FastLED.show();
+      }
+      else if (windSensorValue >= 150 && windSensorValue < 200)
+      {
+        leds[0] = CRGB::Yellow;
+      }
+      else if (windSensorValue >= 200 && windSensorValue < 250)
+      {
+        leds[0] = CRGB::Green;
+      }
+
+      // mapping:
+      //leds[0] = CRGB(0,0,map(windSensorValue,100,300,0,255));
+
     }
 
-    
+    FastLED.show();
 
 
 

@@ -8,8 +8,8 @@
 // SENSORS:
 #define SOLAR false
 #define AIR false
-#define WIND true
-#define NOISE false
+#define WIND false
+#define NOISE true
 
 
 
