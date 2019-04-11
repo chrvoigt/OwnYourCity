@@ -6,10 +6,10 @@
 #define TEAM_NAME "groupName" 
 
 // SENSORS:
-#define SOLAR false
+#define SOLAR true
 #define AIR false
 #define WIND false
-#define NOISE true
+#define NOISE false
 
 
 

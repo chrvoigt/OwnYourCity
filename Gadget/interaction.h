@@ -247,15 +247,19 @@ void processInteractions()
     }
     if (WIND)
     {
-      if (windSensorValue > 0 && windSensorValue < 150)
+      if (windSensorValue > 0 && windSensorValue < 100)
       {
         leds[0] = CRGB::Red;
       }
-      else if (windSensorValue >= 150 && windSensorValue < 200)
+      else if (windSensorValue >= 100 && windSensorValue < 200)
+      {
+        leds[0] = CRGB::Blue;
+      }
+      else if (windSensorValue >= 200 && windSensorValue < 400)
       {
         leds[0] = CRGB::Yellow;
       }
-      else if (windSensorValue >= 200 && windSensorValue < 250)
+      else if (windSensorValue >= 400 && windSensorValue < 600)
       {
         leds[0] = CRGB::Green;
       }
